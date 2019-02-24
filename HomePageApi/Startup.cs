@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GulnesApi.Data;
+using GulnesApi.Data.Jokes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace GulnesApi
 {
@@ -22,18 +18,26 @@ namespace GulnesApi
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        // Method adds services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            const string connectionString = "Server=(local)\\SQL;Database=Gulnes;Trusted_Connection=True;";
+            
+            services.AddDbContext<GulnesContext>(options => 
+                options.UseSqlServer(connectionString));
+
             services.AddCors(o => o.AddPolicy("GulnesClientPolicy", builder =>
                 {
-                    builder.WithOrigins("http://localhost:3000");
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 }));
 
+            services.AddScoped<IJokeRepository, JokeRepository>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -45,7 +49,9 @@ namespace GulnesApi
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            app.UseCors("GulnesClientPolicy");
+
+            //app.UseHttpsRedirection();
             app.UseMvc();
         }
     }

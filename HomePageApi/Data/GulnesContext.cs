@@ -1,11 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GulnesApi.Data.Jokes;
+using Microsoft.EntityFrameworkCore;
 
 namespace GulnesApi.Data
 {
-    public class GulnesContext
+    public class GulnesContext : DbContext
     {
+        public GulnesContext(DbContextOptions options)
+            :base(options)
+        { }
+
+        public DbSet<Joke> Jokes { get; set; }
+
     }
 }
